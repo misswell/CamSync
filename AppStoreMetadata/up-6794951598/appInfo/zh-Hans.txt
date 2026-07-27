@@ -1,0 +1,3 @@
+"name" = "CamSync";
+"subtitle" = "相机与外部存储同步";
+"privacyPolicyUrl" = "https://github.com/misswell/CamSync/blob/main/PRIVACY.md";
