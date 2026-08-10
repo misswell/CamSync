@@ -24,13 +24,19 @@ actor SyncCoordinator {
         force: Bool,
         progress: @MainActor @escaping (SyncProgress) -> Void
     ) async -> SyncSummary {
-        var state = SyncProgress(total: items.count)
+        let orderedItems = items.sorted { lhs, rhs in
+            if lhs.createdAt == rhs.createdAt {
+                return lhs.relativePath < rhs.relativePath
+            }
+            return lhs.createdAt < rhs.createdAt
+        }
+        var state = SyncProgress(total: orderedItems.count)
         await progress(state)
-        var iterator = items.makeIterator()
+        var iterator = orderedItems.makeIterator()
         var skipped = 0
 
         await withTaskGroup(of: (MediaItem, ProcessOutcome).self) { group in
-            let workerCount = min(max(1, maxConcurrent), 3, items.count)
+            let workerCount = min(max(1, maxConcurrent), 3, orderedItems.count)
             for _ in 0..<workerCount {
                 if let item = iterator.next() {
                     state.currentFileNames.append(item.fileName)
