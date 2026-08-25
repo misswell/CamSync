@@ -93,6 +93,13 @@ actor SyncDatabase {
         return records
     }
 
+    func deleteDevice(id: String) throws {
+        let statement = try prepare("DELETE FROM devices WHERE id=?")
+        defer { sqlite3_finalize(statement) }
+        bind(id, at: 1, to: statement)
+        try stepDone(statement)
+    }
+
     func saveSettings(_ settings: DeviceSettings, deviceID: String) throws {
         let data = try encoder.encode(settings)
         let statement = try prepare("""

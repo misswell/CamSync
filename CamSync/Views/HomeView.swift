@@ -7,6 +7,8 @@ struct HomeView: View {
     @State private var showSourcePicker = false
     @State private var showDeviceBrowser = false
     @State private var isOpeningDevice = false
+    @State private var devicePendingDeletion: DeviceRecord?
+    @State private var showDeleteDeviceConfirmation = false
     private let availabilityTimer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -54,6 +56,22 @@ struct HomeView: View {
             .alert("CamSync", isPresented: completionPresented) {
                 Button("好", role: .cancel) { model.completionMessage = nil }
             } message: { Text(model.completionMessage ?? "") }
+            .confirmationDialog(
+                "删除历史设备？",
+                isPresented: $showDeleteDeviceConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("删除", role: .destructive) {
+                    guard let record = devicePendingDeletion else { return }
+                    devicePendingDeletion = nil
+                    Task { await model.deleteDevice(record) }
+                }
+                Button("取消", role: .cancel) {
+                    devicePendingDeletion = nil
+                }
+            } message: {
+                Text("将从历史设备列表中移除“\(devicePendingDeletion?.historyDisplayName ?? "该设备")”。不会删除已经复制到手机的照片。")
+            }
             .onReceive(availabilityTimer) { _ in
                 guard !isOpeningDevice, model.progress == nil else { return }
                 Task { await model.refreshDeviceAvailability() }
@@ -156,6 +174,14 @@ struct HomeView: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                devicePendingDeletion = record
+                                showDeleteDeviceConfirmation = true
+                            } label: {
+                                Label("删除历史设备", systemImage: "trash")
+                            }
+                        }
 
                         if record.id != model.knownDevices.last?.id {
                             Divider().padding(.leading, 44)

@@ -8,6 +8,28 @@ enum SyncItemState: String, Codable, Sendable {
     case failed
 }
 
+enum MediaFormatFilter: String, CaseIterable, Identifiable, Sendable {
+    case all
+    case jpeg
+    case raw
+    case other
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .all: "全部格式"
+        case .jpeg: "JPG / JPEG"
+        case .raw: "RAW"
+        case .other: "其他格式"
+        }
+    }
+
+    func matches(_ item: MediaItem) -> Bool {
+        self == .all || item.formatCategory == self
+    }
+}
+
 struct MediaItem: Identifiable, Hashable, Sendable {
     let id: String
     let sourceURL: URL
@@ -21,6 +43,26 @@ struct MediaItem: Identifiable, Hashable, Sendable {
     var formattedSize: String {
         ByteCountFormatter.string(fromByteCount: byteSize, countStyle: .file)
     }
+
+    var formatCategory: MediaFormatFilter {
+        let fileExtension = sourceURL.pathExtension.lowercased()
+        if fileExtension == "jpg" || fileExtension == "jpeg" {
+            return .jpeg
+        }
+
+        if Self.rawExtensions.contains(fileExtension),
+           UTType(filenameExtension: fileExtension)?.conforms(to: .rawImage) != false {
+            return .raw
+        }
+        return .other
+    }
+
+    private static let rawExtensions: Set<String> = [
+        "3fr", "ari", "arw", "bay", "cr2", "cr3", "crw", "dcr", "dcs", "dng",
+        "drf", "erf", "fff", "iiq", "k25", "kdc", "mef", "mos", "mrw", "nef",
+        "nrw", "orf", "pef", "raf", "raw", "rwl", "rw2", "r3d", "sr2", "srf",
+        "srw", "x3f"
+    ]
 }
 
 struct SourceFolder: Identifiable, Hashable, Sendable {

@@ -5,14 +5,34 @@ struct PhotoSelectionView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("photoGridColumnCount") private var columnCount = 5
     @State private var initialSelection = Set<String>()
+    @State private var formatFilter: MediaFormatFilter = .all
     var onConfirm: (() -> Void)? = nil
+
+    private var filteredItems: [MediaItem] {
+        model.visibleItems.filter { formatFilter.matches($0) }
+    }
+
+    private var allFilteredItemsSelected: Bool {
+        !filteredItems.isEmpty && Set(filteredItems.map(\.id)).isSubset(of: model.selection)
+    }
+
+    private var emptyDescription: String {
+        if model.visibleItems.isEmpty {
+            return "打开“显示已同步”可手动重复下载。"
+        }
+        return "当前没有符合“\(formatFilter.title)”的照片。"
+    }
+
+    private var emptyTitle: String {
+        model.visibleItems.isEmpty ? "没有可选照片" : "没有符合条件的照片"
+    }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(model.items.count) 张 · 已选 \(model.selection.count) 张 · 新增 \(model.newItemCount) 张")
+                        Text("共 \(model.items.count) 张 · 当前 \(filteredItems.count) 张 · 已选 \(model.selection.count) 张 · 新增 \(model.newItemCount) 张")
                             .font(.subheadline)
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
@@ -31,15 +51,15 @@ struct PhotoSelectionView: View {
                 .frame(height: 58)
                 .background(Color(uiColor: .secondarySystemBackground))
 
-                if model.visibleItems.isEmpty {
+                if filteredItems.isEmpty {
                     ContentUnavailableView(
-                        "没有可选照片",
+                        emptyTitle,
                         systemImage: "photo.on.rectangle",
-                        description: Text("打开“显示已同步”可手动重复下载。")
+                        description: Text(emptyDescription)
                     )
                 } else {
                     ScrollView {
-                        PhotoGrid(items: model.visibleItems)
+                        PhotoGrid(items: filteredItems)
                     }
                 }
             }
@@ -63,6 +83,19 @@ struct PhotoSelectionView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
+                        Picker("照片格式", selection: $formatFilter) {
+                            ForEach(MediaFormatFilter.allCases) { filter in
+                                Text("\(filter.title)（\(model.visibleItems.filter { filter.matches($0) }.count) 张）")
+                                    .tag(filter)
+                            }
+                        }
+                    } label: {
+                        Label(formatFilter.title, systemImage: "line.3.horizontal.decrease.circle")
+                    }
+                    .accessibilityLabel("按照片格式筛选，当前：\(formatFilter.title)")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
                         Picker("每行显示", selection: $columnCount) {
                             ForEach(3...6, id: \.self) { count in
                                 Text("每行 \(count) 张").tag(count)
@@ -75,9 +108,10 @@ struct PhotoSelectionView: View {
                 }
                 ToolbarItemGroup(placement: .bottomBar) {
                     Spacer()
-                    Button(model.selection.count == model.visibleItems.count && !model.visibleItems.isEmpty ? "取消全选" : "全选") {
-                        model.selectAllVisible()
+                    Button(allFilteredItemsSelected ? "取消全选" : "全选") {
+                        model.selectAll(filteredItems)
                     }
+                    .disabled(filteredItems.isEmpty)
                 }
             }
             .onAppear { initialSelection = model.selection }

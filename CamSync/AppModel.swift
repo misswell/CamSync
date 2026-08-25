@@ -263,7 +263,11 @@ final class AppModel: ObservableObject {
     }
 
     func selectAllVisible() {
-        let ids = Set(visibleItems.map(\.id))
+        selectAll(visibleItems)
+    }
+
+    func selectAll(_ items: [MediaItem]) {
+        let ids = Set(items.map(\.id))
         if ids.isSubset(of: selection) {
             selection.subtract(ids)
         } else {
@@ -351,6 +355,33 @@ final class AppModel: ObservableObject {
             indexedFolderPath = nil
             await refreshHistory()
             completionMessage = "该设备的同步历史已清除"
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func deleteDevice(_ record: DeviceRecord) async {
+        guard progress == nil else { return }
+        do {
+            try await database.deleteDevice(id: record.id)
+            knownDevices.removeAll { $0.id == record.id }
+            availableDeviceIDs.remove(record.id)
+
+            if device?.id == record.id {
+                stopAccessingSource()
+                device = nil
+                sourceURL = nil
+                folders.removeAll()
+                currentFolderPath = ""
+                items.removeAll()
+                selection.removeAll()
+                settings = DeviceSettings()
+                syncedHistoryCount = 0
+                failedHistoryCount = 0
+                deviceCatalog.removeAll(keepingCapacity: false)
+                indexedFolderPath = nil
+                statusMessage = "选择相机、SD 卡或外部存储中的照片文件夹"
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
