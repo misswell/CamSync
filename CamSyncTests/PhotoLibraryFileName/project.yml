@@ -1,0 +1,54 @@
+# Standalone harness: compiles the real CamSync sources, no copies.
+name: CamSyncVerify
+options:
+  bundleIdPrefix: com.misswell
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: U8U443D7ZL
+targets:
+  VerifyHost:
+    type: application
+    platform: iOS
+    sources:
+      - VerifyHost
+    info:
+      path: VerifyHost/Info.plist
+      properties:
+        UILaunchScreen: {}
+        NSPhotoLibraryUsageDescription: "CamSync verification: read the photo library."
+        NSPhotoLibraryAddUsageDescription: "CamSync verification: import photos."
+  VerifyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - VerifyTests/FileNamePreservationTests.swift
+      - path: ../../CamSync/Services/PhotoLibraryService.swift
+      - path: ../../CamSync/Services/TransferService.swift
+      - path: ../../CamSync/Models/SyncModels.swift
+      - path: VerifyTests/Fixtures/src.jpg
+        buildPhase: resources
+      - path: VerifyTests/Fixtures/src.heic
+        buildPhase: resources
+      - path: VerifyTests/Fixtures/src.png
+        buildPhase: resources
+      - path: VerifyTests/Fixtures/src.nef
+        buildPhase: resources
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: "YES"
+    dependencies:
+      - target: VerifyHost
+schemes:
+  CamSyncVerify:
+    build:
+      targets:
+        VerifyHost: all
+        VerifyTests: [test]
+    test:
+      targets:
+        - VerifyTests

@@ -114,15 +114,28 @@ actor PhotoLibraryService {
         )
     }
 
-    func addPhoto(at fileURL: URL, to albumIdentifier: String) async throws -> String {
+    /// Adds the image at `fileURL` to the album, telling Photos to store it under
+    /// `originalFileName`. `fileURL` may be a CamSync staging file with a UUID name;
+    /// the resource's filename in the library is `originalFileName` instead.
+    func addPhoto(
+        at fileURL: URL,
+        originalFileName: String,
+        to albumIdentifier: String
+    ) async throws -> String {
         let fetch = PHAssetCollection.fetchAssetCollections(
             withLocalIdentifiers: [albumIdentifier], options: nil
         )
         guard let album = fetch.firstObject else { throw PhotoError.collectionNotFound }
         var identifier: String?
         try await performChanges {
-            guard let request = PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: fileURL),
-                  let placeholder = request.placeholderForCreatedAsset else { return }
+            let request = PHAssetCreationRequest.forAsset()
+            let options = PHAssetResourceCreationOptions()
+            options.originalFilename = originalFileName
+            // The staging file is owned by CamSync and removed once the transfer returns.
+            options.shouldMoveFile = false
+            request.addResource(with: .photo, fileURL: fileURL, options: options)
+
+            guard let placeholder = request.placeholderForCreatedAsset else { return }
             identifier = placeholder.localIdentifier
             PHAssetCollectionChangeRequest(for: album)?.addAssets([placeholder] as NSArray)
         }

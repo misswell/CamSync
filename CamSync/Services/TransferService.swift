@@ -33,7 +33,11 @@ final class TransferService: @unchecked Sendable {
             defer { try? FileManager.default.removeItem(at: stagingURL) }
             let digest = try copyAndHash(from: item.sourceURL, to: stagingURL)
             try Task.checkCancellation()
-            let assetID = try await photoLibrary.addPhoto(at: stagingURL, to: albumID)
+            let assetID = try await photoLibrary.addPhoto(
+                at: stagingURL,
+                originalFileName: item.fileName,
+                to: albumID
+            )
             return SyncResult(destinationLocator: assetID, contentHash: digest)
 
         case .files(let fileDestination):
