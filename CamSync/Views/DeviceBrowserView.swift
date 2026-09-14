@@ -129,6 +129,7 @@ struct DeviceBrowserView: View {
 private struct DownloadScopePopover: View {
     @EnvironmentObject private var model: AppModel
     @State private var showsTimeRanges = false
+    @State private var showsFormatFilters = false
     let selectSelected: () -> Void
     let selectNew: () -> Void
     let selectAll: () -> Void
@@ -161,7 +162,27 @@ private struct DownloadScopePopover: View {
             }
 
             Divider()
-            DisclosureGroup(isExpanded: $showsTimeRanges) {
+            DisclosureGroup(isExpanded: formatExpansion) {
+                VStack(spacing: 6) {
+                    ForEach(MediaFormatFilter.allCases) { filter in
+                        formatButton(filter)
+                    }
+                }
+                .padding(.top, 8)
+            } label: {
+                HStack {
+                    Label("按格式", systemImage: "line.3.horizontal.decrease.circle")
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Text(model.downloadFormatFilter.title)
+                        .font(.subheadline)
+                        .foregroundStyle(model.downloadFormatFilter == .all ? Color.secondary : Color.accentColor)
+                }
+                .frame(minHeight: 44)
+            }
+
+            Divider()
+            DisclosureGroup(isExpanded: timeRangeExpansion) {
                 VStack(spacing: 6) {
                     timeButton("今天（00:00 至现在）", since: Calendar.current.startOfDay(for: Date()))
                     timeButton("最近 24 小时", since: date(daysAgo: 1))
@@ -215,6 +236,47 @@ private struct DownloadScopePopover: View {
         }
         .buttonStyle(.plain)
         .disabled(disabled)
+    }
+
+    // 两个展开区互斥，避免弹窗同时展开后超出屏幕高度。
+    private var formatExpansion: Binding<Bool> {
+        Binding(
+            get: { showsFormatFilters },
+            set: {
+                showsFormatFilters = $0
+                if $0 { showsTimeRanges = false }
+            }
+        )
+    }
+
+    private var timeRangeExpansion: Binding<Bool> {
+        Binding(
+            get: { showsTimeRanges },
+            set: {
+                showsTimeRanges = $0
+                if $0 { showsFormatFilters = false }
+            }
+        )
+    }
+
+    private func formatButton(_ filter: MediaFormatFilter) -> some View {
+        let count = model.downloadScopeItems.filter { filter.matches($0) }.count
+        let isSelected = model.downloadFormatFilter == filter
+        return Button {
+            model.downloadFormatFilter = filter
+        } label: {
+            HStack {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+                Text(filter.title)
+                Spacer()
+                Text("\(count) 张").foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func timeButton(_ title: String, since date: Date) -> some View {

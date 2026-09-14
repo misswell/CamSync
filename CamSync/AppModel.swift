@@ -23,6 +23,7 @@ final class AppModel: ObservableObject {
     @Published var availableDeviceIDs = Set<String>()
     @Published var isPreparingDownloadIndex = false
     @Published var isCancellingSync = false
+    @Published var downloadFormatFilter: MediaFormatFilter = .all
 
     private let database: SyncDatabase
     private let deviceService = ExternalDeviceService()
@@ -54,8 +55,11 @@ final class AppModel: ObservableObject {
     var downloadScopeItems: [MediaItem] {
         indexedFolderPath == currentFolderPath ? deviceCatalog : items
     }
-    var downloadScopeCount: Int { downloadScopeItems.count }
-    var downloadScopeNewCount: Int { downloadScopeItems.lazy.filter { $0.state != .synced }.count }
+    private var filteredDownloadScopeItems: [MediaItem] {
+        downloadScopeItems.filter { downloadFormatFilter.matches($0) }
+    }
+    var downloadScopeCount: Int { filteredDownloadScopeItems.count }
+    var downloadScopeNewCount: Int { filteredDownloadScopeItems.lazy.filter { $0.state != .synced }.count }
     var canSync: Bool { !selection.isEmpty && settings.destination != nil && progress == nil }
     var canNavigateBack: Bool { !currentFolderPath.isEmpty }
     var currentFolderName: String {
@@ -243,7 +247,7 @@ final class AppModel: ObservableObject {
     }
 
     func downloadCount(since date: Date) -> Int {
-        downloadScopeItems.lazy.filter { $0.createdAt >= date && $0.state != .synced }.count
+        filteredDownloadScopeItems.lazy.filter { $0.createdAt >= date && $0.state != .synced }.count
     }
 
     func toggleSelection(_ item: MediaItem) {
@@ -330,15 +334,15 @@ final class AppModel: ObservableObject {
     }
 
     func syncCurrentNew() async {
-        await startSync(downloadScopeItems.filter { $0.state != .synced }, force: false)
+        await startSync(filteredDownloadScopeItems.filter { $0.state != .synced }, force: false)
     }
 
     func syncCurrentAll() async {
-        await startSync(downloadScopeItems, force: true)
+        await startSync(filteredDownloadScopeItems, force: true)
     }
 
     func syncCurrent(since date: Date) async {
-        await startSync(downloadScopeItems.filter { $0.createdAt >= date && $0.state != .synced }, force: false)
+        await startSync(filteredDownloadScopeItems.filter { $0.createdAt >= date && $0.state != .synced }, force: false)
     }
 
     func cancelSync() {
@@ -380,6 +384,7 @@ final class AppModel: ObservableObject {
                 failedHistoryCount = 0
                 deviceCatalog.removeAll(keepingCapacity: false)
                 indexedFolderPath = nil
+                downloadFormatFilter = .all
                 statusMessage = "选择相机、SD 卡或外部存储中的照片文件夹"
             }
         } catch {
