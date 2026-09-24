@@ -12,6 +12,7 @@ enum MediaFormatFilter: String, CaseIterable, Identifiable, Sendable {
     case all
     case jpeg
     case raw
+    case video
     case other
 
     var id: String { rawValue }
@@ -21,7 +22,8 @@ enum MediaFormatFilter: String, CaseIterable, Identifiable, Sendable {
         case .all: "全部格式"
         case .jpeg: "JPG / JPEG"
         case .raw: "RAW"
-        case .other: "其他格式"
+        case .video: "视频"
+        case .other: "其他图片格式"
         }
     }
 
@@ -46,6 +48,7 @@ struct MediaItem: Identifiable, Hashable, Sendable {
 
     var formatCategory: MediaFormatFilter {
         let fileExtension = sourceURL.pathExtension.lowercased()
+        if Self.isVideo(fileExtension: fileExtension) { return .video }
         if fileExtension == "jpg" || fileExtension == "jpeg" {
             return .jpeg
         }
@@ -57,10 +60,23 @@ struct MediaItem: Identifiable, Hashable, Sendable {
         return .other
     }
 
+    var isVideo: Bool { formatCategory == .video }
+
+    static func isVideo(fileExtension: String) -> Bool {
+        if videoExtensions.contains(fileExtension) { return true }
+        guard let type = UTType(filenameExtension: fileExtension) else { return false }
+        return type.conforms(to: .movie) || type.conforms(to: .video)
+    }
+
+    private static let videoExtensions: Set<String> = [
+        "mov", "mp4", "m4v", "avi", "mts", "m2ts", "mpg", "mpeg", "3gp", "3g2",
+        "mkv", "webm", "wmv", "mxf", "r3d", "braw", "crm"
+    ]
+
     private static let rawExtensions: Set<String> = [
         "3fr", "ari", "arw", "bay", "cr2", "cr3", "crw", "dcr", "dcs", "dng",
         "drf", "erf", "fff", "iiq", "k25", "kdc", "mef", "mos", "mrw", "nef",
-        "nrw", "orf", "pef", "raf", "raw", "rwl", "rw2", "r3d", "sr2", "srf",
+        "nrw", "orf", "pef", "raf", "raw", "rwl", "rw2", "sr2", "srf",
         "srw", "x3f"
     ]
 }
@@ -74,7 +90,7 @@ struct SourceFolder: Identifiable, Hashable, Sendable {
 
 struct SourceDirectoryContent: Sendable {
     let folders: [SourceFolder]
-    let images: [MediaItem]
+    let mediaItems: [MediaItem]
 }
 
 struct DeviceRecord: Identifiable, Sendable {

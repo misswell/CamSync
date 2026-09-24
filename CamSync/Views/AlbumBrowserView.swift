@@ -94,7 +94,7 @@ struct AlbumBrowserLevel: View {
                 .frame(width: 34)
             VStack(alignment: .leading, spacing: 2) {
                 Text(node.title).foregroundStyle(.primary)
-                Text(node.kind == .folder ? "\(node.childCount) 个项目 · 文件夹" : "\(node.childCount) 张照片 · 相册")
+                Text(node.kind == .folder ? "\(node.childCount) 个项目 · 文件夹" : "\(node.childCount) 个项目 · 相册")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()

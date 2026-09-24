@@ -6,7 +6,7 @@ struct DateRangeMenu: View {
 
     var body: some View {
         Menu {
-            Button("全部照片") { Task { await model.setEarliestDate(nil) } }
+            Button("全部媒体") { Task { await model.setEarliestDate(nil) } }
             Button("今天（00:00 至现在）") {
                 Task { await model.setEarliestDate(Calendar.current.startOfDay(for: Date())) }
             }
@@ -26,7 +26,7 @@ struct DateRangeMenu: View {
     }
 
     private var label: String {
-        guard let date = model.settings.earliestCreationDate else { return "全部照片" }
+        guard let date = model.settings.earliestCreationDate else { return "全部媒体" }
         return "从 \(date.formatted(date: .abbreviated, time: .omitted))"
     }
 

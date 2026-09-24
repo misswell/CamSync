@@ -146,9 +146,22 @@ private struct PhotoCell: View {
                     .resizable()
                     .scaledToFit()
                     .padding(3)
+            } else if item.isVideo {
+                Image(systemName: "video.fill")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
             } else {
                 ProgressView()
                     .controlSize(.small)
+            }
+
+            if item.isVideo {
+                Image(systemName: "play.rectangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.white)
+                    .shadow(radius: 2)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(5)
             }
 
             if item.state == .synced {

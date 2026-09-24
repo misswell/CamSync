@@ -139,7 +139,7 @@ private struct DownloadScopePopover: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("下载哪些照片？")
+            Text("下载哪些照片和视频？")
                 .font(.headline)
             Text("范围：\(model.currentFolderName)及其子目录")
                 .font(.caption)
@@ -156,9 +156,9 @@ private struct DownloadScopePopover: View {
             }
 
             VStack(spacing: 10) {
-                scopeButton("已选照片", count: model.selection.count, systemImage: "checkmark.circle", disabled: model.selection.isEmpty, action: selectSelected)
-                scopeButton("新增照片", count: model.downloadScopeNewCount, systemImage: "sparkles.rectangle.stack", disabled: model.isPreparingDownloadIndex || model.downloadScopeNewCount == 0, action: selectNew)
-                scopeButton("全部照片", count: model.downloadScopeCount, systemImage: "photo.stack", disabled: model.isPreparingDownloadIndex || model.downloadScopeCount == 0, action: selectAll)
+                scopeButton("已选媒体", count: model.selection.count, systemImage: "checkmark.circle", disabled: model.selection.isEmpty, action: selectSelected)
+                scopeButton("新增媒体", count: model.downloadScopeNewCount, systemImage: "sparkles.rectangle.stack", disabled: model.isPreparingDownloadIndex || model.downloadScopeNewCount == 0, action: selectNew)
+                scopeButton("全部媒体", count: model.downloadScopeCount, systemImage: "photo.stack", disabled: model.isPreparingDownloadIndex || model.downloadScopeCount == 0, action: selectAll)
             }
 
             Divider()
@@ -206,7 +206,7 @@ private struct DownloadScopePopover: View {
 
             Divider()
             Button(action: modifySelection) {
-                Label("修改已选照片", systemImage: "checklist")
+                Label("修改已选媒体", systemImage: "checklist")
                     .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                     .contentShape(Rectangle())
             }
@@ -227,7 +227,7 @@ private struct DownloadScopePopover: View {
             HStack {
                 Label(title, systemImage: systemImage)
                 Spacer()
-                Text("\(count) 张").foregroundStyle(.secondary)
+                Text("\(count) 个").foregroundStyle(.secondary)
             }
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity, minHeight: 50)
@@ -270,7 +270,7 @@ private struct DownloadScopePopover: View {
                     .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
                 Text(filter.title)
                 Spacer()
-                Text("\(count) 张").foregroundStyle(.secondary)
+                Text("\(count) 个").foregroundStyle(.secondary)
             }
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, minHeight: 44)
@@ -285,7 +285,7 @@ private struct DownloadScopePopover: View {
             HStack {
                 Text(title)
                 Spacer()
-                Text("\(count) 张").foregroundStyle(.secondary)
+                Text("\(count) 个").foregroundStyle(.secondary)
             }
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, minHeight: 44)
@@ -311,7 +311,7 @@ private struct DownloadDateView: View {
             VStack(spacing: 8) {
                 DatePicker("开始日期", selection: $date, in: ...Date(), displayedComponents: .date)
                     .datePickerStyle(.graphical)
-                LabeledContent("符合条件", value: "\(countForDate(Calendar.current.startOfDay(for: date))) 张照片")
+                LabeledContent("符合条件", value: "\(countForDate(Calendar.current.startOfDay(for: date))) 个媒体文件")
                     .font(.headline)
                     .padding(.horizontal)
             }

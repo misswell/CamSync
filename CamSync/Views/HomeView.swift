@@ -70,7 +70,7 @@ struct HomeView: View {
                     devicePendingDeletion = nil
                 }
             } message: {
-                Text("将从历史设备列表中移除“\(devicePendingDeletion?.historyDisplayName ?? "该设备")”。不会删除已经复制到手机的照片。")
+                Text("将从历史设备列表中移除“\(devicePendingDeletion?.historyDisplayName ?? "该设备")”。不会删除已经复制到手机的照片和视频。")
             }
             .onReceive(availabilityTimer) { _ in
                 guard !isOpeningDevice, model.progress == nil else { return }

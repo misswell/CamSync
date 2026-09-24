@@ -32,7 +32,7 @@ actor ExternalDeviceService {
             options: [.skipsHiddenFiles]
         )
         var folders: [SourceFolder] = []
-        var images: [MediaItem] = []
+        var mediaItems: [MediaItem] = []
         for url in urls {
             guard let values = try? url.resourceValues(forKeys: keys), values.isHidden != true else { continue }
             let childPath = relativePath.isEmpty ? url.lastPathComponent : "\(relativePath)/\(url.lastPathComponent)"
@@ -40,7 +40,7 @@ actor ExternalDeviceService {
                 folders.append(SourceFolder(name: url.lastPathComponent, relativePath: childPath, url: url))
             } else if values.isRegularFile == true,
                       Self.isSupportedMedia(fileURL: url, type: values.contentType) {
-                images.append(Self.mediaItem(
+                mediaItems.append(Self.mediaItem(
                     url: url,
                     relativePath: childPath,
                     values: values
@@ -48,11 +48,11 @@ actor ExternalDeviceService {
             }
         }
         folders.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
-        images.sort { lhs, rhs in
+        mediaItems.sort { lhs, rhs in
             if lhs.createdAt == rhs.createdAt { return lhs.fileName < rhs.fileName }
             return lhs.createdAt > rhs.createdAt
         }
-        return SourceDirectoryContent(folders: folders, images: images)
+        return SourceDirectoryContent(folders: folders, mediaItems: mediaItems)
     }
 
     func scan(rootURL: URL, relativePath: String = "") throws -> [MediaItem] {
@@ -99,7 +99,10 @@ actor ExternalDeviceService {
     }
 
     private static func isSupportedMedia(fileURL: URL, type: UTType?) -> Bool {
-        if let type, type.conforms(to: .image) { return true }
+        if let type, type.conforms(to: .image) || type.conforms(to: .movie) || type.conforms(to: .video) {
+            return true
+        }
+        if MediaItem.isVideo(fileExtension: fileURL.pathExtension.lowercased()) { return true }
         guard let inferred = UTType(filenameExtension: fileURL.pathExtension) else { return false }
         return inferred.conforms(to: .image)
     }

@@ -39,7 +39,7 @@ struct HistoryView: View {
                                 Label("清除同步历史？", systemImage: "trash")
                                     .font(.headline)
                                     .foregroundStyle(.red)
-                                Text("清除后，这些照片会重新被视为未同步，但不会删除已经复制到手机的照片。")
+                                Text("清除后，这些照片和视频会重新被视为未同步，但不会删除已经复制到手机的文件。")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 HStack {
@@ -58,10 +58,10 @@ struct HistoryView: View {
                             .presentationCompactAdaptation(.popover)
                         }
                 } footer: {
-                    Text("清除后，这些照片会重新被视为未同步；不会删除手机相册或文件中的照片。")
+                    Text("清除后，这些照片和视频会重新被视为未同步；不会删除手机相册或文件中的内容。")
                 }
                 Section("可靠性") {
-                    Label("最多三张照片并发传输", systemImage: "arrow.triangle.branch")
+                    Label("最多三个媒体文件并发传输", systemImage: "arrow.triangle.branch")
                     Label("失败与中断不会标记成功", systemImage: "checkmark.shield")
                     Label("每个设备独立保存设置与记录", systemImage: "externaldrive.connected.to.line.below")
                 }

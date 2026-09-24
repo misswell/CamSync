@@ -1,3 +1,4 @@
+import AVFoundation
 import ImageIO
 import UIKit
 
@@ -34,6 +35,14 @@ actor ThumbnailLoader {
     }
 
     nonisolated private static func decodeThumbnail(from url: URL, maxPixelSize: CGFloat) -> UIImage? {
+        if MediaItem.isVideo(fileExtension: url.pathExtension.lowercased()) {
+            let asset = AVURLAsset(url: url)
+            let generator = AVAssetImageGenerator(asset: asset)
+            generator.appliesPreferredTrackTransform = true
+            generator.maximumSize = CGSize(width: maxPixelSize, height: maxPixelSize)
+            guard let frame = try? generator.copyCGImage(at: .zero, actualTime: nil) else { return nil }
+            return UIImage(cgImage: frame)
+        }
         let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
         guard let source = CGImageSourceCreateWithURL(url as CFURL, sourceOptions) else { return nil }
 

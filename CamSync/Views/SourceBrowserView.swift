@@ -74,11 +74,11 @@ struct SourceBrowserView: View {
                 if !model.items.isEmpty {
                     Button(action: onOpenPhotos) {
                         VStack(spacing: 6) {
-                            Image(systemName: "photo.on.rectangle.angled")
+                            Image(systemName: "photo.stack")
                                 .font(.system(size: 29, weight: .regular))
                                 .foregroundStyle(.blue)
                                 .frame(height: 38)
-                            Text("照片 \(model.items.count)")
+                            Text("照片和视频 \(model.items.count)")
                                 .font(.caption2.weight(.semibold))
                                 .foregroundStyle(.primary)
                                 .multilineTextAlignment(.center)
@@ -90,7 +90,7 @@ struct SourceBrowserView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("打开照片，共 \(model.items.count) 张，\(model.newItemCount) 张新增")
+                    .accessibilityLabel("打开照片和视频，共 \(model.items.count) 个，\(model.newItemCount) 个新增")
                 }
             }
             .padding(.horizontal, 10)
@@ -98,7 +98,7 @@ struct SourceBrowserView: View {
             .background(.background, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
             if model.folders.isEmpty && model.items.isEmpty && !model.isScanning {
-                ContentUnavailableView("空文件夹", systemImage: "folder", description: Text("这里没有子文件夹或照片。"))
+                ContentUnavailableView("空文件夹", systemImage: "folder", description: Text("这里没有子文件夹、照片或视频。"))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 20)
             }

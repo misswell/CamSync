@@ -20,11 +20,11 @@ struct PhotoSelectionView: View {
         if model.visibleItems.isEmpty {
             return "打开“显示已同步”可手动重复下载。"
         }
-        return "当前没有符合“\(formatFilter.title)”的照片。"
+        return "当前没有符合“\(formatFilter.title)”的照片或视频。"
     }
 
     private var emptyTitle: String {
-        model.visibleItems.isEmpty ? "没有可选照片" : "没有符合条件的照片"
+        model.visibleItems.isEmpty ? "没有可选媒体文件" : "没有符合条件的媒体文件"
     }
 
     var body: some View {
@@ -32,7 +32,7 @@ struct PhotoSelectionView: View {
             VStack(spacing: 0) {
                 HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("共 \(model.items.count) 张 · 当前 \(filteredItems.count) 张 · 已选 \(model.selection.count) 张 · 新增 \(model.newItemCount) 张")
+                        Text("共 \(model.items.count) 个 · 当前 \(filteredItems.count) 个 · 已选 \(model.selection.count) 个 · 新增 \(model.newItemCount) 个")
                             .font(.subheadline)
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
@@ -54,7 +54,7 @@ struct PhotoSelectionView: View {
                 if filteredItems.isEmpty {
                     ContentUnavailableView(
                         emptyTitle,
-                        systemImage: "photo.on.rectangle",
+                        systemImage: "photo.on.rectangle.angled",
                         description: Text(emptyDescription)
                     )
                 } else {
@@ -63,7 +63,7 @@ struct PhotoSelectionView: View {
                     }
                 }
             }
-            .navigationTitle("选择照片")
+            .navigationTitle("选择照片和视频")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -83,16 +83,16 @@ struct PhotoSelectionView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Picker("照片格式", selection: $formatFilter) {
+                        Picker("媒体格式", selection: $formatFilter) {
                             ForEach(MediaFormatFilter.allCases) { filter in
-                                Text("\(filter.title)（\(model.visibleItems.filter { filter.matches($0) }.count) 张）")
+                                Text("\(filter.title)（\(model.visibleItems.filter { filter.matches($0) }.count) 个）")
                                     .tag(filter)
                             }
                         }
                     } label: {
                         Label(formatFilter.title, systemImage: "line.3.horizontal.decrease.circle")
                     }
-                    .accessibilityLabel("按照片格式筛选，当前：\(formatFilter.title)")
+                    .accessibilityLabel("按媒体格式筛选，当前：\(formatFilter.title)")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
@@ -104,7 +104,7 @@ struct PhotoSelectionView: View {
                     } label: {
                         Label("\(columnCount) 列", systemImage: "square.grid.3x3")
                     }
-                    .accessibilityLabel("调整照片列数，当前每行 \(columnCount) 张")
+                    .accessibilityLabel("调整媒体列数，当前每行 \(columnCount) 个")
                 }
                 ToolbarItemGroup(placement: .bottomBar) {
                     Spacer()

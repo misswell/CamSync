@@ -13,7 +13,7 @@ actor PhotoLibraryService {
             case .permissionDenied: "没有照片权限，请在系统设置中允许访问。"
             case .collectionNotFound: "目标相册或文件夹已不存在。"
             case .cannotCreateCollection: "无法创建相册或文件夹。"
-            case .cannotSaveAsset: "照片写入系统相册失败。"
+            case .cannotSaveAsset: "媒体文件写入系统相册失败。"
             }
         }
     }
@@ -114,12 +114,13 @@ actor PhotoLibraryService {
         )
     }
 
-    /// Adds the image at `fileURL` to the album, telling Photos to store it under
+    /// Adds the photo or video at `fileURL` to the album, telling Photos to store it under
     /// `originalFileName`. `fileURL` may be a CamSync staging file with a UUID name;
     /// the resource's filename in the library is `originalFileName` instead.
-    func addPhoto(
+    func addMedia(
         at fileURL: URL,
         originalFileName: String,
+        isVideo: Bool,
         to albumIdentifier: String
     ) async throws -> String {
         let fetch = PHAssetCollection.fetchAssetCollections(
@@ -133,7 +134,7 @@ actor PhotoLibraryService {
             options.originalFilename = originalFileName
             // The staging file is owned by CamSync and removed once the transfer returns.
             options.shouldMoveFile = false
-            request.addResource(with: .photo, fileURL: fileURL, options: options)
+            request.addResource(with: isVideo ? .video : .photo, fileURL: fileURL, options: options)
 
             guard let placeholder = request.placeholderForCreatedAsset else { return }
             identifier = placeholder.localIdentifier

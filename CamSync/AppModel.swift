@@ -13,7 +13,7 @@ final class AppModel: ObservableObject {
     @Published var settings = DeviceSettings()
     @Published var progress: SyncProgress?
     @Published var isScanning = false
-    @Published var statusMessage = "选择相机、SD 卡或外部存储中的照片文件夹"
+    @Published var statusMessage = "选择相机、SD 卡或外部存储中的照片和视频文件夹"
     @Published var errorMessage: String?
     @Published var completionMessage: String?
     @Published var syncedHistoryCount = 0
@@ -200,11 +200,11 @@ final class AppModel: ObservableObject {
         )
         let synced = try await database.syncedItemIDs(
             deviceID: device.id,
-            itemIDs: content.images.map(\.id)
+            itemIDs: content.mediaItems.map(\.id)
         )
         currentFolderPath = relativePath
         folders = content.folders
-        items = content.images.map { item in
+        items = content.mediaItems.map { item in
             var updated = item
             updated.state = synced.contains(item.id) ? .synced : .neverSynced
             return updated
@@ -214,7 +214,7 @@ final class AppModel: ObservableObject {
         selection.removeAll()
         settings.lastSourceFolderPath = relativePath
         await persistSettings()
-        statusMessage = "\(currentFolderName)：\(folders.count) 个文件夹，\(items.count) 张照片"
+        statusMessage = "\(currentFolderName)：\(folders.count) 个文件夹，\(items.count) 个媒体文件"
     }
 
     func prepareDownloadIndex() async {
@@ -385,7 +385,7 @@ final class AppModel: ObservableObject {
                 deviceCatalog.removeAll(keepingCapacity: false)
                 indexedFolderPath = nil
                 downloadFormatFilter = .all
-                statusMessage = "选择相机、SD 卡或外部存储中的照片文件夹"
+                statusMessage = "选择相机、SD 卡或外部存储中的照片和视频文件夹"
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -418,7 +418,7 @@ final class AppModel: ObservableObject {
 
     private func performSync(_ candidates: [MediaItem], force: Bool) async {
         guard !candidates.isEmpty else {
-            completionMessage = "当前范围内没有可传输的照片"
+            completionMessage = "当前范围内没有可传输的照片或视频"
             return
         }
         guard var destination = settings.destination else {
