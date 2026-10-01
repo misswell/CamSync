@@ -6,3 +6,5 @@ xcuserdata/
 .asc/
 dist/
 node_modules/
+__pycache__/
+video/*.mp4
